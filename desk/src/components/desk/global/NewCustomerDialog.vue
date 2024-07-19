@@ -1,10 +1,13 @@
 <template>
   <div>
-    <Dialog v-model="open" :options="{ title: 'Add New Customer', size: 'sm' }">
+    <FDialog
+      v-model="open"
+      :options="{ title: 'Add New Customer', size: 'sm' }"
+    >
       <template #body-content>
         <div class="space-y-4">
           <div class="space-y-1">
-            <Input
+            <FInput
               v-model="customer"
               label="Customer Name"
               type="text"
@@ -12,11 +15,22 @@
             />
           </div>
           <div class="space-y-1">
-            <Input
+            <FInput
               v-model="domain"
               label="Domain"
               type="text"
               placeholder="eg: tesla.com, mycompany.com"
+            />
+          </div>
+          <div
+            v-for="field in visibleFields"
+            :key="field.fieldname"
+            class="space-y-1"
+          >
+            <UniInput
+              :field="field"
+              :value="customerFields[field.fieldname]"
+              @change="customerFields[field.fieldname] = $event.value"
             />
           </div>
           <div class="float-right flex space-x-2">
@@ -35,18 +49,27 @@
           </div>
         </div>
       </template>
-    </Dialog>
+    </FDialog>
   </div>
 </template>
 
 <script>
-import { Input, Dialog, ErrorMessage } from "frappe-ui";
-import { computed, ref, inject } from "vue";
+import { Input as FInput, Dialog as FDialog, createResource } from "frappe-ui";
+// To avoid vue/no-reserved-component-names
+import { computed, reactive } from "vue";
+import { UniInput } from "@/components";
+
+const custom_fields = createResource({
+  url: "helpdesk.helpdesk.doctype.hd_customer.api.get_customer_fields",
+  auto: true,
+});
+
 export default {
   name: "NewCustomerDialog",
   components: {
-    Dialog,
-    Input,
+    FDialog,
+    FInput,
+    UniInput,
   },
   props: {
     modelValue: {
@@ -72,13 +95,20 @@ export default {
     return {
       customer: "",
       domain: "",
+      customerFields: reactive({}),
     };
+  },
+  computed: {
+    visibleFields() {
+      return custom_fields.data || [];
+    },
   },
   methods: {
     addCustomer() {
       const inputParams = {
         customer_name: this.customer,
         domain: this.domain,
+        ...this.customerFields,
       };
       this.$resources.newCustomer.submit({
         doc: {
@@ -90,6 +120,7 @@ export default {
     close() {
       this.customer = "";
       this.domain = "";
+      this.customerFields = reactive({});
       this.$emit("close");
     },
   },
@@ -97,7 +128,7 @@ export default {
     newCustomer() {
       return {
         url: "frappe.client.insert",
-        onSuccess: (doc) => {
+        onSuccess: () => {
           this.$router.push(`/customers`);
         },
       };

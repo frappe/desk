@@ -2,7 +2,10 @@
   <div class="space-y-1.5">
     <span class="block text-sm text-gray-700">
       {{ field.label }}
-      <span v-if="field.required" class="place-self-center text-red-500">
+      <span
+        v-if="field.required || field.reqd"
+        class="place-self-center text-red-500"
+      >
         *
       </span>
     </span>
