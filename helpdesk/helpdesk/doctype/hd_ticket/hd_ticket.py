@@ -472,6 +472,11 @@ class HDTicket(Document):
 		recipients = to or self.raised_by
 		sender_email = None if skip_email_workflow else self.sender_email()
 		last_communication = self.get_last_communication()
+		user = frappe.get_doc("User",frappe.session.user)
+		email_signature = user.email_signature
+		if email_signature:
+			signature = email_signature.replace('\n', '<br>')
+			message = message + str('<p>'+ signature + '</p>')
 
 		if last_communication:
 			cc = cc or last_communication.cc
