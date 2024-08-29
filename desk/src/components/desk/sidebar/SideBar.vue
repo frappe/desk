@@ -55,6 +55,30 @@
       />
     </div>
     <div class="grow" />
+    <!-- onboarding circle  -->
+    <div class="flex cursor-pointer items-center gap-2" @click="openSidePanel">
+      <CircularProgressBar
+        :step="step"
+        :total-steps="totalSteps"
+        :is-outer-circle-filled-on-complete="false"
+        :class="{
+          'w-full ': isExpanded,
+          'w-8 shrink-0': !isExpanded,
+        }"
+        :ring-size="'2rem'"
+        :ring-bar-width="'10px'"
+      />
+      <div
+        class="duration-400 text-sm text-gray-600 ease-in-out"
+        :class="{
+          'opacity-100': isExpanded,
+          'opacity-0 -z-50 ': !isExpanded,
+        }"
+      >
+        {{ step }}/{{ totalSteps }} steps completed
+      </div>
+    </div>
+
     <SidebarLink
       :icon="isExpanded ? LucideArrowLeftFromLine : LucideArrowRightFromLine"
       :is-active="false"
@@ -63,6 +87,10 @@
       :on-click="() => (isExpanded = !isExpanded)"
     />
     <SettingsModal v-if="authStore.isAdmin" v-model="showSettingsModal" />
+  </div>
+  <!-- side panel -->
+  <div v-if="showOnboardingDialog">
+    <OnboardingDialog v-model="showOnboardingDialog" />
   </div>
 </template>
 
@@ -83,7 +111,9 @@ import {
 } from "@/router";
 import { useDevice } from "@/composables";
 import { SidebarLink } from "@/components";
+import { CircularProgressBar } from "@/components";
 import UserMenu from "./UserMenu.vue";
+import OnboardingDialog from "@/components/onboarding/OnboardingDialog.vue";
 import LucideArrowLeftFromLine from "~icons/lucide/arrow-left-from-line";
 import LucideArrowRightFromLine from "~icons/lucide/arrow-right-from-line";
 import LucideBookOpen from "~icons/lucide/book-open";
@@ -142,6 +172,14 @@ const menuOptions = computed(() => [
     to: AGENT_PORTAL_CONTACT_LIST,
   },
 ]);
+
+const step = ref(3);
+const totalSteps = ref(10);
+
+const showOnboardingDialog = ref(false);
+function openSidePanel() {
+  showOnboardingDialog.value = !showOnboardingDialog.value;
+}
 
 const profileSettings = [
   {

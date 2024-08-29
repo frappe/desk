@@ -28,3 +28,4 @@ export { default as AssignmentModal } from "./AssignmentModal.vue";
 export { default as Autocomplete } from "./Autocomplete.vue";
 export { default as CannedResponseSelectorModal } from "./CannedResponseSelectorModal.vue";
 export { default as FadedScrollableDiv } from "./FadedScrollableDiv.vue";
+export { default as CircularProgressBar } from "./CircularProgressBar.vue";
