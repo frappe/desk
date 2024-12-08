@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "vite",
 		"preview": "vite preview",
-		"build": "vite build --base=/assets/helpdesk/desk/ && yarn copy-html-entry",
+		"build": "vite build -l warn --base=/assets/helpdesk/desk/ && yarn copy-html-entry",
 		"serve": "vite preview",
 		"copy-html-entry": "cp ../helpdesk/public/desk/index.html ../helpdesk/www/helpdesk/index.html"
 	},
