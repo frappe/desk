@@ -132,7 +132,7 @@
 		},
 		{
 			"hidden": 0,
-			"is_query_report": 0,
+			"is_query_report": 1,
 			"label": "Ticket Analytics",
 			"link_count": 0,
 			"link_to": "Ticket Analytics",
@@ -142,7 +142,7 @@
 		},
 		{
 			"hidden": 0,
-			"is_query_report": 0,
+			"is_query_report": 1,
 			"label": "Ticket Summary",
 			"link_count": 0,
 			"link_to": "Ticket Summary",
