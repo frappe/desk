@@ -25,6 +25,10 @@ def get_filterable_fields(doctype: str, show_customer_portal_fields=False):
         "Small Text",
         "Text Editor",
         "Text",
+        "Rating",
+        "Duration",
+        "Date",
+        "Datetime",
     ]
 
     visible_custom_fields = get_visible_custom_fields()
@@ -92,7 +96,7 @@ def get_filterable_fields(doctype: str, show_customer_portal_fields=False):
     # TODO: Ritvik => till a better way we have for custom fields, just show custom fields
 
     res.extend(from_custom_fields)
-    if not show_customer_portal_fields:
+    if not show_customer_portal_fields and doctype == "HD Ticket":
         res.append(
             {
                 "fieldname": "_assign",
@@ -103,15 +107,26 @@ def get_filterable_fields(doctype: str, show_customer_portal_fields=False):
             }
         )
 
-    res.append(
+    standard_fields = [
+        {"fieldname": "name", "fieldtype": "Link", "label": "ID", "options": doctype},
         {
-            "fieldname": "name",
-            "fieldtype": "Data",
-            "label": "ID",
-            "name": "name",
+            "fieldname": "owner",
+            "fieldtype": "Link",
+            "label": "Created By",
+            "options": "User",
         },
-    )
-
+        {
+            "fieldname": "modified_by",
+            "fieldtype": "Link",
+            "label": "Last Updated By",
+            "options": "User",
+        },
+        {"fieldname": "creation", "fieldtype": "Datetime", "label": "Created On"},
+        {"fieldname": "modified", "fieldtype": "Datetime", "label": "Last Updated On"},
+    ]
+    for field in standard_fields:
+        if field.get("fieldname") not in [r.get("fieldname") for r in res]:
+            res.append(field)
     return res
 
 
@@ -128,6 +143,9 @@ def get_list_data(
     view=None,
 ):
     is_default = True
+    rows = frappe.parse_json(rows or "[]")
+    columns = frappe.parse_json(columns or "[]")
+
     view_type = view.get("view_type") if view else None
     group_by_field = view.get("group_by_field") if view else None
     label_doc = view.get("label_doc") if view else None
@@ -135,8 +153,8 @@ def get_list_data(
 
     if columns or rows:
         is_default = False
-        columns = frappe.parse_json(columns)
-        rows = frappe.parse_json(rows)
+        columns = frappe.parse_json(columns or "[]")
+        rows = frappe.parse_json(rows or "[]")
 
     if not columns:
         columns = [
@@ -292,6 +310,7 @@ def get_list_data(
     return {
         "data": data,
         "columns": columns,
+        "rows": rows,
         "fields": fields if doctype == "HD Ticket" else [],
         "total_count": frappe.get_list(
             doctype, filters=filters, fields="count(*) as count"
@@ -340,8 +359,8 @@ def get_quick_filters(doctype: str):
     if doctype == "Contact":
         quick_filters.append(name_filter)
         return quick_filters
-
-    if doctype == "HD Agent" or doctype == "HD Customer":
+    name_filter_doctypes = ["HD Agent", "HD Customer", "HD Ticket"]
+    if doctype in name_filter_doctypes:
         quick_filters.append(name_filter)
 
     for field in fields:

@@ -1,7 +1,8 @@
 import { useClipboard, useDateFormat, useTimeAgo } from "@vueuse/core";
 import { toast } from "frappe-ui";
-import { ref } from "vue";
+import { ref, h } from "vue";
 import zod from "zod";
+import { gemoji } from "gemoji";
 /**
  * Wrapper to create toasts, supplied with default options.
  * https://frappeui.com/components/toast.html
@@ -182,4 +183,20 @@ export function isContentEmpty(content: string) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, "text/html");
   return doc.body.textContent === "";
+}
+
+export function isTouchScreenDevice() {
+  return "ontouchstart" in document.documentElement;
+}
+
+export function isEmoji(str) {
+  const emojiList = gemoji.map((emoji) => emoji.emoji);
+  return emojiList.includes(str);
+}
+
+export function getIcon(icon) {
+  if (isEmoji(icon)) {
+    return h("div", icon);
+  }
+  return icon || "align-justify";
 }

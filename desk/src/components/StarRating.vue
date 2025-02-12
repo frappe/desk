@@ -17,7 +17,7 @@
       xmlns:xlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 47.94 47.94"
       xml:space="preserve"
-      @click="emit('update:rating', i)"
+      @click="updateRating(i)"
     >
       <path
         d="M26.285,2.486l5.407,10.956c0.376,0.762,1.103,1.29,1.944,1.412l12.091,1.757
@@ -37,12 +37,14 @@ interface P {
   static?: boolean;
 }
 
-interface E {
-  (event: "update:rating", value: number): void;
-}
-
-withDefaults(defineProps<P>(), {
+const props = withDefaults(defineProps<P>(), {
   static: true,
 });
-const emit = defineEmits<E>();
+
+const modelValue = defineModel();
+
+function updateRating(value: number) {
+  if (props.static) return;
+  modelValue.value = value;
+}
 </script>

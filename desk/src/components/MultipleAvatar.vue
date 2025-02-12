@@ -1,24 +1,24 @@
 <template>
   <div
-    v-if="avatars?.length"
+    v-if="_avatars?.length"
     class="mr-1.5 flex cursor-pointer items-center"
     :class="[
-      avatars?.length > 1 ? 'flex-row-reverse' : 'truncate [&>div]:truncate',
+      _avatars?.length > 1 ? 'flex-row-reverse' : 'truncate [&>div]:truncate',
     ]"
   >
-    <div v-if="avatars?.length == 1" class="flex items-center gap-2 text-base">
-      <Tooltip :text="avatars[0].name">
+    <div v-if="_avatars?.length == 1" class="flex items-center gap-2 text-base">
+      <Tooltip :text="_avatars[0].name">
         <Avatar
           shape="circle"
-          :image="avatars[0].image"
-          :label="avatars[0].label"
+          :image="_avatars[0].image"
+          :label="_avatars[0].label"
           size="sm"
         />
-        <div class="truncate">{{ avatars[0].label }}</div>
+        <div class="truncate">{{ _avatars[0].label }}</div>
       </Tooltip>
     </div>
     <Tooltip
-      v-for="avatar in props.avatars"
+      v-for="avatar in _avatars"
       v-else
       :key="avatar.name"
       :text="avatar.name"
@@ -36,15 +36,38 @@
 </template>
 <script setup lang="ts">
 import { Avatar, Tooltip } from "frappe-ui";
+import { computed } from "vue";
+import { useUserStore } from "@/stores/user";
 
 const props = defineProps({
   avatars: {
-    type: Array,
-    default: () => [],
+    type: String,
   },
   size: {
     type: String,
     default: "md",
   },
+});
+const { getUser } = useUserStore();
+const _avatars = computed(() => {
+  let result: any;
+  try {
+    result = JSON.parse(props.avatars);
+  } catch (error) {
+    result = props.avatars;
+  }
+  if (!result) return;
+  if (result[0].hasOwnProperty("name")) {
+    return result;
+  }
+  result = result.map((a: string) => {
+    let _user = getUser(a);
+    return {
+      name: _user.name,
+      label: _user.full_name,
+      image: _user.user_image,
+    };
+  });
+  return result;
 });
 </script>

@@ -8,11 +8,11 @@
         >
           <template #prefix><FilterIcon class="h-4" /></template>
           <template v-if="filters?.size" #suffix>
-            <div
-              class="flex h-5 w-5 items-center justify-center rounded bg-gray-900 pt-[1px] text-2xs font-medium text-white"
+            <span
+              class="flex h-5 w-5 items-center justify-center rounded-[5px] bg-surface-white pt-px text-xs font-medium text-ink-gray-8 shadow-sm"
             >
               {{ filters.size }}
-            </div>
+            </span>
           </template>
         </Button>
         <Tooltip v-if="filters?.size" :text="'Clear all Filter'">
@@ -164,7 +164,7 @@ import {
   DateRangePicker,
   NestedPopover,
 } from "frappe-ui";
-import { AutocompleteNew, Link } from "@/components";
+import { AutocompleteNew, Link, StarRating } from "@/components";
 import { useScreenSize } from "@/composables/screen";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 
@@ -184,6 +184,7 @@ const typeNumber = ["Float", "Int", "Currency", "Percent"];
 const typeSelect = ["Select"];
 const typeString = ["Data", "Long Text", "Small Text", "Text Editor", "Text"];
 const typeDate = ["Date", "Datetime"];
+const typeRating = ["Rating"];
 
 const listViewData = inject("listViewData");
 const listViewActions = inject("listViewActions");
@@ -313,6 +314,19 @@ function getOperators(fieldtype, fieldname) {
       ]
     );
   }
+  if (typeRating.includes(fieldtype)) {
+    options.push(
+      ...[
+        { label: "Equals", value: "equals" },
+        { label: "Not Equals", value: "not equals" },
+        { label: "Is", value: "is" },
+        { label: ">", value: ">" },
+        { label: "<", value: "<" },
+        { label: ">=", value: ">=" },
+        { label: "<=", value: "<=" },
+      ]
+    );
+  }
   return options;
 }
 
@@ -364,6 +378,13 @@ function getValueControl(f) {
       value: f.value,
       iconLeft: "",
     });
+  } else if (typeRating.includes(fieldtype)) {
+    return h(StarRating, {
+      rating: f.value || 0,
+      static: false,
+      class: "truncate",
+      "onUpdate:modelValue": (v) => updateValue(v, f),
+    });
   } else {
     return h(FormControl, { type: "text" });
   }
@@ -379,6 +400,9 @@ function getDefaultValue(field) {
   if (typeDate.includes(field.fieldtype)) {
     return null;
   }
+  if (typeRating.includes(field.fieldtype)) {
+    return 0;
+  }
   return "";
 }
 
@@ -393,6 +417,9 @@ function getDefaultOperator(fieldtype) {
     return "between";
   }
   if (typeLink.includes(fieldtype)) {
+    return "equals";
+  }
+  if (typeRating.includes(fieldtype)) {
     return "equals";
   }
   return "like";

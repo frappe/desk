@@ -126,7 +126,8 @@
                 bccEmailsClone = [];
                 cc = false;
                 bcc = false;
-                newEmail = '';
+                newEmail = null;
+                attachments = null;
                 emit('discard');
               }
             "

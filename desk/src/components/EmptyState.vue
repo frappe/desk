@@ -15,16 +15,16 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  title: {
-    type: String,
-    default: "No Data Found",
-  },
-  icon: {
-    type: String || HTMLElement,
-    default: "",
-  },
+<script setup lang="ts">
+import { VNode } from "vue";
+interface Props {
+  title: string;
+  icon?: VNode | string;
+}
+
+withDefaults(defineProps<Props>(), {
+  title: "No Data Found",
+  icon: "",
 });
 
 const emit = defineEmits(["emptyStateAction"]);

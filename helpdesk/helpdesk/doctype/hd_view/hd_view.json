@@ -1,0 +1,197 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:VIEW-{dt}-{###}",
+ "creation": "2025-02-11 16:05:11.457844",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "icon",
+  "user",
+  "is_default",
+  "column_break_zacm",
+  "type",
+  "dt",
+  "route_name",
+  "pinned",
+  "public",
+  "filters_tab",
+  "filters",
+  "order_by_tab",
+  "order_by",
+  "list_tab",
+  "list_section",
+  "load_default_columns",
+  "columns",
+  "rows",
+  "group_by_tab",
+  "group_by_field"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Label"
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default"
+  },
+  {
+   "fieldname": "column_break_zacm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "list",
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "list\ngroup_by\nkanban"
+  },
+  {
+   "fieldname": "dt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "route_name",
+   "fieldtype": "Data",
+   "label": "Route Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "pinned",
+   "fieldtype": "Check",
+   "label": "Pinned"
+  },
+  {
+   "default": "0",
+   "fieldname": "public",
+   "fieldtype": "Check",
+   "label": "Public"
+  },
+  {
+   "fieldname": "filters_tab",
+   "fieldtype": "Tab Break",
+   "label": "Filters"
+  },
+  {
+   "fieldname": "filters",
+   "fieldtype": "Code",
+   "label": "Filters"
+  },
+  {
+   "fieldname": "order_by_tab",
+   "fieldtype": "Tab Break",
+   "label": "Order By"
+  },
+  {
+   "fieldname": "order_by",
+   "fieldtype": "Code",
+   "label": "Order By"
+  },
+  {
+   "fieldname": "list_tab",
+   "fieldtype": "Tab Break",
+   "label": "List"
+  },
+  {
+   "fieldname": "list_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "load_default_columns",
+   "fieldtype": "Check",
+   "label": "Load Default Columns"
+  },
+  {
+   "fieldname": "columns",
+   "fieldtype": "Code",
+   "label": "Columns"
+  },
+  {
+   "fieldname": "rows",
+   "fieldtype": "Code",
+   "label": "Rows"
+  },
+  {
+   "fieldname": "group_by_tab",
+   "fieldtype": "Tab Break",
+   "label": "Group By"
+  },
+  {
+   "fieldname": "group_by_field",
+   "fieldtype": "Data",
+   "label": "Group By Field"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-12 21:01:26.983071",
+ "modified_by": "Administrator",
+ "module": "Helpdesk",
+ "name": "HD View",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

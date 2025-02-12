@@ -27,7 +27,12 @@
         <div class="space-y-2">
           <span> Select a rating </span>
           <span class="text-red-500"> * </span>
-          <StarRating v-model:rating="rating" :static="false" />
+          <StarRating
+            :static="false"
+            :rating="rating"
+            v-model="rating"
+            @update:model-value="rating = $event"
+          />
         </div>
         <div v-if="options.data?.length" class="space-y-2">
           <span> Pick an option </span>

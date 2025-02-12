@@ -75,7 +75,7 @@ class HDArticle(Document):
             },
             {
                 "label": "Author",
-                "type": "Data",
+                "type": "Link",
                 "key": "author",
                 "width": "17rem",
             },

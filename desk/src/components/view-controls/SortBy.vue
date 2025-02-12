@@ -26,7 +26,7 @@
         <template v-if="!hideLabel" #prefix><SortIcon class="h-4" /></template>
         <template v-if="sortValues?.size" #suffix>
           <div
-            class="flex h-5 w-5 items-center justify-center rounded bg-gray-900 pt-[1px] text-2xs font-medium text-white"
+            class="flex h-5 w-5 items-center justify-center rounded-[5px] bg-surface-white pt-px text-xs font-medium text-ink-gray-8 shadow-sm"
           >
             {{ sortValues.size }}
           </div>
@@ -107,7 +107,7 @@
                     #target="{ togglePopover, selectedValue, displayValue }"
                   >
                     <Button
-                      class="flex w-full items-center justify-between rounded-l-none !text-gray-600"
+                      class="flex w-full items-center justify-between rounded-l-none !text-gray-600 text-xs"
                       size="md"
                       @click="togglePopover()"
                     >
@@ -195,7 +195,7 @@ const sortValues = computed({
     if (!list) return new Set();
     let allSortValues = list.params?.order_by;
     if (!allSortValues || !sortOptions.data) return new Set();
-    // if (allSortValues.trim() === "modified desc") return new Set();
+    if (allSortValues.trim() === "modified desc") return new Set();
 
     allSortValues = allSortValues.split(", ").map((sortValue) => {
       const [fieldname, direction] = sortValue.split(" ");

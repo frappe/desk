@@ -67,49 +67,46 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref } from "vue";
 import { createResource, Button, Breadcrumbs, confirmDialog } from "frappe-ui";
+import { useConfigStore } from "@/stores/config";
 import { Icon } from "@iconify/vue";
 import { useError } from "@/composables/error";
-import TicketConversation from "./ticket/TicketConversation.vue";
-import TicketCustomerTemplateFields from "./ticket/TicketCustomerTemplateFields.vue";
-import TicketFeedback from "./ticket/TicketFeedback.vue";
-import TicketTextEditor from "./ticket/TicketTextEditor.vue";
-import { ITicket } from "./ticket/symbols";
+import { ITicket } from "./symbols";
 import { useRouter } from "vue-router";
 import { createToast, isContentEmpty, setupCustomActions } from "@/utils";
 import { socket } from "@/socket";
 import { LayoutHeader } from "@/components";
-import TicketCustomerSidebar from "@/components/ticket/TicketCustomerSidebar.vue";
 import { useScreenSize } from "@/composables/screen";
-import { useConfigStore } from "@/stores/config";
+import TicketConversation from "./TicketConversation.vue";
+import TicketCustomerTemplateFields from "./TicketCustomerTemplateFields.vue";
+import TicketTextEditor from "./TicketTextEditor.vue";
+import TicketFeedback from "./TicketFeedback.vue";
+import TicketCustomerSidebar from "@/components/ticket/TicketCustomerSidebar.vue";
+import { useTicket } from "./data";
 interface P {
   ticketId: string;
 }
 const router = useRouter();
 
 const props = defineProps<P>();
-const ticket = createResource({
-  url: "helpdesk.helpdesk.doctype.hd_ticket.api.get_one",
-  cache: ["Ticket", props.ticketId],
-  auto: true,
-  params: {
-    name: props.ticketId,
-    is_customer_portal: true,
+const ticket = useTicket(
+  props.ticketId,
+  true,
+  null,
+  (data) => {
+    setupCustomActions(data, {
+      doc: data,
+      updateField,
+    });
   },
-  onError: () => {
+  () => {
     createToast({
       title: "Ticket not found",
       icon: "x",
       iconClasses: "text-red-600",
     });
     router.replace("/my-tickets");
-  },
-  onSuccess: (data) => {
-    setupCustomActions(data, {
-      doc: data,
-      updateField,
-    });
-  },
-});
+  }
+);
 provide(ITicket, ticket);
 const editor = ref(null);
 const placeholder = "Type a message";

@@ -68,12 +68,12 @@ const routes = [
           {
             path: "",
             name: "TicketsCustomer",
-            component: () => import("@/pages/Tickets.vue"),
+            component: () => import("@/pages/ticket/Tickets.vue"),
           },
           {
             path: "new/:templateId?",
             name: "TicketNew",
-            component: () => import("@/pages/TicketNew.vue"),
+            component: () => import("@/pages/ticket/TicketNew.vue"),
             props: true,
             meta: {
               onSuccessRoute: "TicketCustomer",
@@ -83,7 +83,7 @@ const routes = [
           {
             path: ":ticketId",
             name: "TicketCustomer",
-            component: () => import("@/pages/TicketCustomer.vue"),
+            component: () => import("@/pages/ticket/TicketCustomer.vue"),
             props: true,
           },
         ],
@@ -123,7 +123,7 @@ const routes = [
       {
         path: "tickets",
         name: AGENT_PORTAL_TICKET_LIST,
-        component: () => import("@/pages/Tickets.vue"),
+        component: () => import("@/pages/ticket/Tickets.vue"),
       },
       {
         path: "notifications",
@@ -133,7 +133,7 @@ const routes = [
       {
         path: "tickets/new/:templateId?",
         name: "TicketAgentNew",
-        component: () => import("@/pages/TicketNew.vue"),
+        component: () => import("@/pages/ticket/TicketNew.vue"),
         props: true,
         meta: {
           onSuccessRoute: "TicketAgent",
@@ -144,7 +144,7 @@ const routes = [
         path: "tickets/:ticketId",
         name: "TicketAgent",
         component: () =>
-          import(`@/pages/${handleMobileView("TicketAgent")}.vue`),
+          import(`@/pages/ticket/${handleMobileView("TicketAgent")}.vue`),
         props: true,
       },
       {

@@ -43,6 +43,7 @@
     "vue-echarts": "^6.5.4",
     "vue-router": "^4.2.2",
     "vuedraggable": "^4.1.0",
+    "gemoji": "^8.1.0",
     "zod": "^3.21.4"
   },
   "resolutions": {

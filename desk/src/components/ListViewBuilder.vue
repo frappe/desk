@@ -9,6 +9,10 @@
       <Reload @click="reload" :loading="list.loading" />
       <Filter :default_filters="defaultParams.filters" />
       <SortBy :hide-label="isMobileView" />
+      <ColumnSettings
+        :hide-label="isMobileView"
+        v-if="!options.hideColumnSetting"
+      />
     </div>
     <div v-else class="flex justify-between items-center w-full">
       <Filter :default_filters="defaultParams.filters" />
@@ -27,10 +31,10 @@
     :rows="rows"
     row-key="name"
     :options="{
-      selectable: props.options.selectable ?? true ,
-      showTooltip: true,
+      selectable: options.selectable,
+      showTooltip: false,
       resizeColumn: false,
-      onRowClick: (row: Object) => emit('rowClick', row['name']),
+      onRowClick: () => {},
       emptyState,
     }"
   >
@@ -45,28 +49,20 @@
     <ListRows
       :rows="rows"
       v-slot="{ idx, column, item, row }"
-      :group-by-actions="props.options.groupByActions"
+      :group-by-actions="options.groupByActions"
     >
-      <ListRowItem :item="item" :row="row" :column="column">
-        <!-- TODO: filters on click of other columns -->
-        <!-- and not on first column, it should emit the event -->
-        <div v-if="idx === 0" class="truncate">
-          {{ item }}
-        </div>
-        <div v-else-if="column.type === 'Datetime'">
-          {{ dayjs.tz(item).fromNow() }}
-        </div>
-        <div v-else-if="column.type === 'status'">
-          <Badge v-bind="handleStatusColor(item)" />
-        </div>
-        <div v-else class="truncate">
-          {{ item }}
-        </div>
+      <ListRowItem
+        :item="item"
+        :column="column"
+        :row="row"
+        @click="(e) => handleFieldClick(e, column, row, item)"
+      >
+        <component :is="listCell(column, row, item, idx)" :key="column.key" />
       </ListRowItem>
     </ListRows>
-    <ListSelectBanner v-if="props.options.showSelectBanner">
-      <template #actions="{ selections }">
-        <Dropdown :options="selectBannerOptions(selections)">
+    <ListSelectBanner v-if="options.showSelectBanner">
+      <template #actions="{ selections, unselectAll }">
+        <Dropdown :options="selectBannerOptions(selections, unselectAll)">
           <Button icon="more-horizontal" variant="ghost" />
         </Dropdown>
       </template>
@@ -97,12 +93,14 @@
   <EmptyState
     v-else
     :title="emptyState.title"
+    :icon="emptyState.icon"
     @emptyStateAction="emit('emptyStateAction')"
   />
 </template>
 
 <script setup lang="ts">
-import { reactive, provide, computed, h } from "vue";
+import { reactive, provide, computed, h, ref, watch, VNode } from "vue";
+import { useRoute } from "vue-router";
 import {
   createResource,
   ListView,
@@ -111,22 +109,23 @@ import {
   ListHeader,
   ListHeaderItem,
   ListSelectBanner,
-  Badge,
   FeatherIcon,
   Dropdown,
 } from "frappe-ui";
-
 import {
   Filter,
   SortBy,
   QuickFilters,
   Reload,
+  ColumnSettings,
 } from "@/components/view-controls";
-import { dayjs } from "@/dayjs";
+import { MultipleAvatar, StarRating } from "@/components";
 import ListRows from "./ListRows.vue";
-import { useScreenSize } from "@/composables/screen";
 import EmptyState from "./EmptyState.vue";
-import { BadgeStatus, View } from "@/types";
+import { useScreenSize } from "@/composables/screen";
+import { dayjs } from "@/dayjs";
+import { ViewType } from "@/types";
+import useView from "@/composables/useView";
 
 interface P {
   options: {
@@ -134,17 +133,19 @@ interface P {
     defaultFilters?: Record<string, any>;
     columnConfig?: Record<string, any>;
     emptyState?: {
-      icon?: HTMLElement | string;
+      // type of a h componnt
+      icon?: string | VNode;
       title: string;
     };
     hideViewControls?: boolean;
+    hideColumnSetting?: boolean;
     selectable?: boolean;
-    statusMap?: Record<string, BadgeStatus>;
-    view?: View;
+    view?: ViewType;
     groupByActions?: Array<any>;
     showSelectBanner?: boolean;
     selectBannerActions?: Record<string, any>;
     default_page_length?: number;
+    isCustomerPortal?: boolean;
   };
 }
 
@@ -152,51 +153,52 @@ interface E {
   (event: "emptyStateAction"): void;
   (event: "rowClick", row: any): void;
 }
+const props = defineProps<P>();
+const emit = defineEmits<E>();
+const route = useRoute();
 
-const props = withDefaults(defineProps<P>(), {
-  options: () => {
-    return {
-      doctype: "",
-      hideViewControls: false,
-      selectable: true,
-      view: {
-        view_type: "list",
-        group_by_field: "owner",
-      },
-      groupByActions: [],
-      default_page_length: 20,
-    };
+const defaultOptions = {
+  doctype: "",
+  hideViewControls: false,
+  selectable: false,
+  view: {
+    view_type: "list",
+    group_by_field: "owner",
   },
+  groupByActions: [],
+  default_page_length: 20,
+  isCustomerPortal: false,
+  hideColumnSetting: true,
+};
+
+const options = computed(() => {
+  return {
+    ...defaultOptions,
+    ...props.options,
+  };
 });
 
-const emit = defineEmits<E>();
 const { isMobileView } = useScreenSize();
+
 const defaultEmptyState = {
   icon: "",
   title: "No Data Found",
 };
 
 const defaultParams = reactive({
-  doctype: props.options.doctype,
-  filters: props.options.defaultFilters || {},
+  doctype: options.value.doctype,
+  filters: options.value.defaultFilters || {},
   order_by: "modified desc",
-  page_length: props.options.default_page_length,
-  page_length_count: props.options.default_page_length,
-  view: props.options.view,
+  page_length: options.value.default_page_length,
+  page_length_count: options.value.default_page_length,
+  view: options.value.view,
+  columns: [],
+  show_customer_portal_fields: options.value.isCustomerPortal,
 });
 
 const emptyState = computed(() => {
-  return props.options?.emptyState || defaultEmptyState;
+  return options.value?.emptyState || defaultEmptyState;
 });
-
-function selectBannerOptions(selections: Set<string>) {
-  return props.options.selectBannerActions.map((action) => {
-    return {
-      ...action,
-      onClick: () => action.onClick(selections),
-    };
-  });
-}
 
 const list = createResource({
   url: "helpdesk.api.doc.get_list_data",
@@ -207,12 +209,37 @@ const list = createResource({
       handleFetchFromField(column);
       handleColumnConfig(column);
     });
+    if (options.value.doctype === "HD Ticket") {
+      data.data.forEach((row) => {
+        if (
+          defaultParams.show_customer_portal_fields &&
+          row.status === "Replied"
+        ) {
+          row.status = "Awaiting Response";
+        }
+      });
+    }
     return data;
   },
-  onSuccess: () => {
+  onSuccess: (data) => {
     list.params = defaultParams;
+    columns.value = data.columns;
   },
 });
+
+const exposeFunctions = {
+  list,
+  reload,
+};
+function selectBannerOptions(selections: Set<string>, unselectAll = () => {}) {
+  exposeFunctions["unselectAll"] = unselectAll;
+  return options.value.selectBannerActions.map((action) => {
+    return {
+      ...action,
+      onClick: () => action.onClick(selections),
+    };
+  });
+}
 
 const rows = computed(() => {
   if (!list.data?.data) return [];
@@ -222,7 +249,7 @@ const rows = computed(() => {
   }
   return list.data?.data;
 });
-const columns = computed(() => list.data?.columns);
+const columns = ref([]);
 
 function getGroupedByRows(listRows, groupByField) {
   let groupedRows = [];
@@ -259,32 +286,22 @@ function handleFetchFromField(column) {
 }
 
 function handleColumnConfig(column) {
-  if (!props.options?.columnConfig) return column;
-  const columnConfig = props.options.columnConfig;
+  if (!options.value?.columnConfig) return column;
+  const columnConfig = options.value.columnConfig;
   if (!columnConfig.hasOwnProperty(column.key)) return column;
   column.prefix = columnConfig[column.key]?.prefix;
 
   return column;
 }
 
-const statusMap: Record<string, BadgeStatus> = props.options
-  .statusMap as Record<string, BadgeStatus>;
-function handleStatusColor(status: "Published" | "Draft"): BadgeStatus {
-  if (!statusMap)
-    return {
-      label: status,
-      theme: "gray",
-    };
-  return statusMap[status];
-}
-
 const filterableFields = createResource({
   url: "helpdesk.api.doc.get_filterable_fields",
-  cache: ["DocField", props.options.doctype],
-  auto: !props.options.hideViewControls,
+  cache: ["DocField", options.value.doctype],
+  auto: !options.value.hideViewControls,
   params: {
-    doctype: props.options.doctype,
+    doctype: options.value.doctype,
     append_assign: true,
+    show_customer_portal_fields: defaultParams.show_customer_portal_fields,
   },
   transform: (data) => {
     data = data.map((field) => {
@@ -300,17 +317,18 @@ const filterableFields = createResource({
 
 const sortableFields = createResource({
   url: "helpdesk.api.doc.sort_options",
-  auto: !props.options.hideViewControls,
+  auto: !options.value.hideViewControls,
   params: {
-    doctype: props.options.doctype,
+    doctype: options.value.doctype,
+    show_customer_portal_fields: defaultParams.show_customer_portal_fields,
   },
 });
 
 const quickFilters = createResource({
   url: "helpdesk.api.doc.get_quick_filters",
-  auto: !props.options.hideViewControls,
+  auto: !options.value.hideViewControls,
   params: {
-    doctype: props.options.doctype,
+    doctype: options.value.doctype,
   },
   transform: (data) => {
     if (Boolean(data.length)) return;
@@ -319,9 +337,69 @@ const quickFilters = createResource({
   },
 });
 
+function listCell(column: any, row: any, item: any, idx: number) {
+  const columnConfig = options.value.columnConfig;
+  if (columnConfig && columnConfig[column.key]?.custom) {
+    return columnConfig[column.key]?.custom({ column, row, item, idx });
+  }
+  if (idx === 0) {
+    return h("span", {
+      class: "truncate text-base text-ink-gray-6",
+      innerHTML: item,
+    });
+  }
+  if (column.type === "Datetime") {
+    return h("span", {
+      class: "text-base",
+      innerHTML: dayjs.tz(item).fromNow(),
+    });
+  }
+  if (column.type === "MultipleAvatar") {
+    return h(MultipleAvatar, {
+      avatars: item,
+      class: "flex items-center",
+    });
+  }
+  if (column.type === "Rating") {
+    return h(StarRating, {
+      rating: item || 0,
+      class: "truncate",
+    });
+  }
+  return h("span", {
+    class: "truncate",
+    innerHTML: item,
+  });
+}
+
+function handleFieldClick(e: MouseEvent, column, row, item) {
+  if (item == "Awaiting Response") {
+    item = "Replied";
+  }
+  const noFilterFields = ["Data", "Datetime", "Rating", "Int", "Float"];
+  if (noFilterFields.includes(column.type)) {
+    emit("rowClick", row.name);
+    return;
+  }
+  if (column.type === "MultipleAvatar") {
+    if (item.length > 1) {
+      let target = e.target as HTMLElement;
+      target = target.closest(".user-avatar");
+      if (target) {
+        item = target.getAttribute("data-name");
+      }
+    } else {
+      item = item[0].name;
+    }
+    applyFilters({ ...defaultParams.filters, [column.key]: item });
+    return;
+  }
+  applyFilters({ ...defaultParams.filters, [column.key]: item });
+}
+
 const showViewControls = computed(() => {
   return (
-    !props.options.hideViewControls &&
+    !options.value.hideViewControls &&
     filterableFields.data &&
     sortableFields.data &&
     quickFilters.data
@@ -340,13 +418,13 @@ provide("listViewData", listViewData);
 provide("listViewActions", {
   applyFilters,
   applySort,
-  addColumn,
+  updateColumns,
   reload,
 });
 
 function applyFilters(filters) {
   defaultParams.filters = { ...filters };
-  list.submit({ ...defaultParams, filters });
+  list.submit({ ...defaultParams });
 }
 
 function applySort(order_by: string) {
@@ -354,8 +432,14 @@ function applySort(order_by: string) {
   list.submit({ ...defaultParams, order_by });
 }
 
-function addColumn(field) {
-  console.log("ADD COLUMN", field);
+function updateColumns(obj) {
+  const { columns: _columns, isDefault, reload, reset } = obj;
+  _columns?.forEach((column) => {
+    handleFetchFromField(column);
+    handleColumnConfig(column);
+  });
+  columns.value = defaultParams.columns = isDefault ? "" : _columns;
+  list.reload({ ...defaultParams });
 }
 
 function reload() {
@@ -379,8 +463,16 @@ function handlePageLength(count: number, loadMore: boolean = false) {
   list.reload();
 }
 
-// to handle cases where the list view is updated
-defineExpose({
-  reload,
-});
+const { findView } = useView(options.value.doctype);
+
+watch(
+  () => route.query.view,
+  (val: string) => {
+    const v = findView(val);
+    console.log(v.value);
+  },
+  { immediate: true }
+);
+
+defineExpose(exposeFunctions);
 </script>

@@ -45,6 +45,7 @@ import {
   confirmDialog,
   Dropdown,
   createResource,
+  Badge,
 } from "frappe-ui";
 import { useRouter } from "vue-router";
 import {
@@ -144,7 +145,6 @@ const groupByActions = [
     label: "Merge",
     icon: LucideMerge,
     onClick: (groupedRow) => {
-      console.log(groupedRow);
       mergeModal.value = true;
       category.title = groupedRow.group.label;
       category.id = groupedRow.group.value;
@@ -170,13 +170,12 @@ const groupByActions = [
 ];
 
 const listSelections = ref(new Set());
-const showSelectBanner = ref(true);
 const selectBannerActions = [
   {
     label: "Move To",
     icon: "corner-up-right",
     onClick: (selections: Set<string>) => {
-      listSelections.value = selections;
+      listSelections.value = new Set(selections);
       moveToModal.value = true;
     },
   },
@@ -205,8 +204,9 @@ function handleMoveToCategory(category: string) {
     },
     {
       onSuccess: () => {
-        listViewRef.value.reload();
         moveToModal.value = false;
+        listViewRef.value.reload();
+        listViewRef.value?.unselectAll();
         listSelections.value.clear();
         createToast({
           title: "Articles moved successfully",
@@ -341,6 +341,7 @@ function handleDeleteArticles() {
     {
       onSuccess: () => {
         listViewRef.value.reload();
+        listViewRef.value?.unselectAll();
         listSelections.value.clear();
         createToast({
           title: "Articles deleted successfully",
@@ -389,25 +390,12 @@ function resetState() {
 const options = computed(() => {
   return {
     doctype: "HD Article",
+    selectable: true,
     view: {
       view_type: "group_by",
       group_by_field: "category",
       label_doc: "HD Article Category",
       label_field: "category_name",
-    },
-    statusMap: {
-      Published: {
-        label: "Published",
-        theme: "green",
-      },
-      Draft: {
-        label: "Draft",
-        theme: "orange",
-      },
-      Archived: {
-        label: "Archived",
-        theme: "gray",
-      },
     },
     columnConfig: {
       title: {
@@ -418,13 +406,35 @@ const options = computed(() => {
           });
         },
       },
+      status: {
+        custom: ({ item }) => {
+          return h(Badge, {
+            ...statusMap[item],
+          });
+        },
+      },
     },
     groupByActions,
-    showSelectBanner: showSelectBanner.value,
+    showSelectBanner: true,
     selectBannerActions,
     default_page_length: 100,
   };
 });
+
+const statusMap = {
+  Published: {
+    label: "Published",
+    theme: "green",
+  },
+  Draft: {
+    label: "Draft",
+    theme: "orange",
+  },
+  Archived: {
+    label: "Archived",
+    theme: "gray",
+  },
+};
 
 onMounted(() => {
   capture("kb_agent_page_viewed");

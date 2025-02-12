@@ -21,14 +21,14 @@ export const agentPortalSidebarOptions = [
     to: AGENT_PORTAL_TICKET_LIST,
   },
   {
-    label: "Agents",
-    icon: LucideUser,
-    to: AGENT_PORTAL_AGENT_LIST,
-  },
-  {
     label: "Knowledge Base",
     icon: LucideBookOpen,
     to: "AgentKnowledgeBase",
+  },
+  {
+    label: "Agents",
+    icon: LucideUser,
+    to: AGENT_PORTAL_AGENT_LIST,
   },
   {
     label: "Teams",

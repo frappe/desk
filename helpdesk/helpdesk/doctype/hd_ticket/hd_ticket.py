@@ -808,8 +808,14 @@ class HDTicket(Document):
             },
             {
                 "label": "Assigned To",
-                "type": "Text",
+                "type": "MultipleAvatar",
                 "key": "_assign",
+                "width": "10rem",
+            },
+            {
+                "label": "Rating",
+                "type": "Rating",
+                "key": "feedback_rating",
                 "width": "10rem",
             },
             {
@@ -872,12 +878,6 @@ class HDTicket(Document):
                 "key": "agent_group",
                 "width": "10rem",
             },
-            # {
-            #     "label": "Assigned To",
-            #     "type": "Text",
-            #     "key": "_assign",
-            #     "width": "10rem",
-            # },
             {
                 "label": "Created",
                 "type": "Datetime",
