@@ -126,9 +126,7 @@ class Search:
         self._index_exists = True
 
     def add_synonyms(self):
-        for word, synonym in frappe.get_all(
-            "HD Synonym", ["parent", "name"], as_list=True
-        ):
+        for word, synonym in frappe.get_all("HD Synonym", ["parent", "name"], as_list=True):
             self.redis.ft(self.index_name).synupdate(word, True, word, synonym)
 
     def add_document(self, id, doc):
@@ -325,9 +323,7 @@ class HelpdeskSearch(Search):
     def get_records(self, doctype):
         records = []
         filters = {"status": "Published"} if doctype == "HD Article" else {}
-        for d in frappe.db.get_all(
-            doctype, filters=filters, fields=self.DOCTYPE_FIELDS[doctype]
-        ):
+        for d in frappe.db.get_all(doctype, filters=filters, fields=self.DOCTYPE_FIELDS[doctype]):
             d.doctype = doctype
             if doctype == "HD Article":
                 for heading, section in self.get_sections(d.content):
@@ -396,17 +392,3 @@ def build_index_if_not_exists():
     search = HelpdeskSearch()
     if not search.index_exists():
         build_index()
-
-
-@filelock("helpdesk_corpus_download", timeout=60)
-def download_corpus():
-    from nltk import data, download
-
-    try:
-        data.find("taggers/averaged_perceptron_tagger_eng.zip")
-        data.find("tokenizers/punkt_tab.zip")
-        data.find("corpora/brown.zip")
-    except LookupError:
-        download("averaged_perceptron_tagger_eng")
-        download("punkt_tab")
-        download("brown")
